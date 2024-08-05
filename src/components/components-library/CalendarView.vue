@@ -1,93 +1,89 @@
 <template>
-  <div class="calendar-container">
-    <div class="calendar-header">
-      <div v-for="(day, index) in daysOfWeek" :key="index" class="calendar-day-header">
-        {{ day }}
+    <div class="calendar">
+      <!-- 요일 헤더 -->
+      <div class="weekdays">
+        <CalendarIcon v-for="(day, index) in weekdays" :key="index" :day="day" type="weekday" />
+      </div>
+      <!-- 날짜 아이콘 -->
+      <div class="days">
+        <CalendarIcon
+          v-for="(day, index) in days"
+          :key="index"
+          :day="day.date.getDate()"
+          :type="getDayType(day)"
+        />
       </div>
     </div>
-    <div class="calendar-body">
-      <CalendarView
-        :cell-styling="cellStyling"
-        :show-header="false"
-        :show-arrows="false"
-        :start-of-week="0"
-      />
-    </div>
-  </div>
-</template>
-
-<script>
-import { CalendarView } from 'vue-simple-calendar';
-
-export default {
-  components: {
-    CalendarView
-  },
-  data() {
-    return {
-      daysOfWeek: ["일", "월", "화", "수", "목", "금", "토"],
-      cellStyling(date) {
-        const today = new Date();
-        const cellStyle = {
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          fontFamily: 'NanumSquare, sans-serif',
-          border: '1px solid var(--border-primary)',
-          boxSizing: 'border-box',
-          width: '46px',
-          height: '46px',
-          backgroundColor: 'var(--surface-fourth)',
-          color: 'var(--text-primary)'
-        };
-
-        if (date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear()) {
-          cellStyle.color = 'var(--text-fourth)';
-          cellStyle.border = '1px solid var(--border-tertiary)';
-        } else if (date.toISOString().substring(0, 10) === '2024-01-01') {
-          cellStyle.backgroundColor = 'var(--surface-secondary)';
-          cellStyle.color = 'var(--text-secondary)';
-        } else if (date.getMonth() !== today.getMonth()) {
-          cellStyle.backgroundColor = 'var(--surface-tertiary)';
-          cellStyle.color = 'var(--text-fifth)';
+  </template>
+  
+  <script>
+  import {
+    startOfMonth,
+    endOfMonth,
+    startOfWeek,
+    endOfWeek,
+    eachDayOfInterval,
+    isToday,
+    isSameMonth,
+  } from 'date-fns';
+  import CalendarIcon from './CalendarIcon.vue';
+  
+  export default {
+    components: {
+      CalendarIcon,
+    },
+    props: {
+      year: {
+        type: Number,
+        required: true,
+      },
+      month: {
+        type: Number,
+        required: true,
+      },
+    },
+    data() {
+      return {
+        weekdays: ['일', '월', '화', '수', '목', '금', '토'],
+        days: [],
+        today: new Date(),
+      };
+    },
+    created() {
+      this.generateCalendar();
+    },
+    methods: {
+      generateCalendar() {
+        const start = startOfWeek(startOfMonth(new Date(this.year, this.month - 1)));
+        const end = endOfWeek(endOfMonth(new Date(this.year, this.month - 1)));
+        this.days = eachDayOfInterval({ start, end }).map(date => ({
+          date,
+          checked: false // 데이터베이스의 출석 체크 상태를 여기서 연동할 수 있습니다.
+        }));
+      },
+      getDayType(day) {
+        if (!isSameMonth(day.date, new Date(this.year, this.month - 1))) return 'notInMonth';
+        if (isToday(day.date)) {
+          return day.checked ? 'todayChecked' : 'todayNotChecked';
         }
-
-        return cellStyle;
+        return day.checked ? 'checked' : 'notChecked';
       }
-    };
+    }
+  };
+  </script>
+  
+  <style scoped>
+  .calendar {
+    width: 358px;
+    height: 358px;
+    display: grid;
+    grid-template-columns: repeat(7, 46px);
+    grid-template-rows: 46px repeat(6, 46px);
+    gap: 1px;
   }
-};
-</script>
-
-<style scoped>
-.calendar-container {
-  width: 358px;
-  height: 358px;
-  display: grid;
-  grid-template-rows: 46px auto;
-}
-
-.calendar-header {
-  display: flex;
-  width: 100%;
-}
-
-.calendar-day-header {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 1px solid var(--border-primary);
-  box-sizing: border-box;
-  width: 46px;
-  height: 46px;
-}
-
-.calendar-body {
-  display: grid;
-  grid-template-columns: repeat(7, 46px);
-  grid-template-rows: repeat(auto-fill, 46px);
-  gap: 0;
-  width: 100%;
-}
-</style>
+  
+  .weekdays, .days {
+    display: contents;
+  }
+  </style>
+  

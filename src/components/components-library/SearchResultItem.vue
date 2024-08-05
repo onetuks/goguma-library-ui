@@ -22,9 +22,8 @@ export default {
   display: flex;
   align-items: center;
   width: 360px;
-  height: 145px;
   padding: 10px;
-  background-color: var(--surface-primary);
+  background-color: var(--surface-secondary);
   border-radius: 5px;
   margin-bottom: 10px;
 }
@@ -44,14 +43,14 @@ export default {
 .book-title {
   font-family: 'NanumSquare', sans-serif;
   font-weight: bold;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   margin: 0;
   font-size: 16px;
 }
 
 .book-author {
   font-family: 'NanumSquare', sans-serif;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   margin: 5px 0 0;
   font-size: 14px;
 }
